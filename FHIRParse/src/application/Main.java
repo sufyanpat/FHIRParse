@@ -40,7 +40,7 @@ public class Main extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		primaryStage.setTitle("XML JSON Parser");
+		primaryStage.setTitle("FHIR Parser");
 
 		Label lblHeader = new Label();
 		lblHeader.setText("FHIR Parser");
