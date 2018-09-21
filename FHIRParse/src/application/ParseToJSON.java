@@ -6,21 +6,24 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import org.apache.commons.io.FilenameUtils;
 
 public class ParseToJSON {
 
-	@SuppressWarnings({ "resource", "rawtypes" })
+	@SuppressWarnings({ "resource" })
 	public static void main(String[] args) throws IOException {
-		String resourcetype = args[0];// type of resource
-		String inputfile = args[1];// input filename
-		String outputfile = args[2];// output path
+		String inputfile = args[0];// input filename
+		String outputfile = args[1];// output path
+		
+		File f = new File(inputfile);
+		String inputFilename = f.getName();
+		String fileNameWithOutExt = FilenameUtils.removeExtension(inputFilename);
+		
 
 		BufferedReader br;
 		String line;
@@ -38,9 +41,8 @@ public class ParseToJSON {
 		FhirContext ctx = FhirContext.forDstu3();
 		IParser parser = ctx.newXmlParser();
 		// send the resource argument to getResource method
-		Class rr = getResource(resourcetype);
-		@SuppressWarnings("unchecked")
-		Object resource = parser.parseResource(rr, result);
+		//Object resource = parser.parseResource(rr, result);
+		Object resource = parser.parseResource(result);
 
 		String outputJSON = ctx.newJsonParser().setPrettyPrint(true).encodeResourceToString((IBaseResource) resource);
 
@@ -49,7 +51,8 @@ public class ParseToJSON {
 			BufferedWriter bw = null;
 			FileWriter fw = null;
 
-			String fileName = new SimpleDateFormat("yyyyMMddHHmm'.json'").format(new Date());
+			//String fileName = new SimpleDateFormat("yyyyMMddHHmm'.json'").format(new Date());
+			String fileName = fileNameWithOutExt+".json";
 			
 			fw = new FileWriter(outputfile+"/"+fileName);
 			bw = new BufferedWriter(fw);

@@ -31,13 +31,15 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 
-	Button btnParse;
-
+	Button btnParse, btnSelectInputFile, btnOutFolder;
+	File file;
+	
 	public static void main(String[] args) {
 		launch(args);
 
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		primaryStage.setTitle("FHIR Parser");
@@ -49,7 +51,9 @@ public class Main extends Application {
 		MenuBar menuBar = new MenuBar();
 		Menu menuAbout = new Menu("About");
 		MenuItem menuItemContact = new MenuItem("Contact");
-		menuAbout.getItems().addAll(menuItemContact);
+		MenuItem menuItemVersion = new MenuItem("Version");
+
+		menuAbout.getItems().addAll(menuItemContact,menuItemVersion);
 		menuBar.getMenus().addAll(menuAbout);
 		
 		
@@ -63,10 +67,29 @@ public class Main extends Application {
 
 	        	alert.showAndWait();
 	        }
+	    }
+				);
+		
+		menuItemVersion.setOnAction(new EventHandler<ActionEvent>() {
+		     
+	        @Override public void handle(ActionEvent e) {
+	        	Alert alert = new Alert(AlertType.INFORMATION);
+	        	alert.setTitle("Version");
+	        	alert.setHeaderText(null);
+	        	alert.setContentText("FHIRParse v2.0");
+
+	        	alert.showAndWait();
+	        }
 	    });
+		
+		
 		
 		btnParse = new Button();
 		btnParse.setText("Parse!");
+		btnSelectInputFile = new Button();
+		btnSelectInputFile.setText("Input File");
+		btnOutFolder = new Button();
+		btnOutFolder.setText("Select Output folder");
 		
 		TextField inputfilename = new TextField ();
 		inputfilename.setMinWidth(500);
@@ -76,14 +99,16 @@ public class Main extends Application {
 		outputfilename.setMinWidth(500);
 		outputfilename.setEditable(false);
 		
-		Label lblconv = new Label("Step 1 - Select Conversion Type");
-		Label label1 = new Label("Step 2 - Select Input File");
-		Label label2 = new Label("Step 3 - Select the type of resource");
-		Label label3 = new Label("Step 4 - Select destination path");
-		Label label4 = new Label("Step 5 - Click 'Parse!'");
+		Label lblconv = new Label("Select Conversion Type");
+		Label label1 = new Label("Select Input File");
+		Label label3 = new Label("Select destination path");
+		Label label4 = new Label("Click 'Parse!'");
 		
 		Label lblDone = new Label("Done!");
+		Label lblProcessing = new Label("Processing...");
+
 		lblDone.setVisible(false);
+		lblProcessing.setVisible(false);
 		
 		ChoiceBox<String> conversionType = new ChoiceBox<>();
 		conversionType.getItems().addAll("XML > JSON", "JSON > XML");
@@ -111,20 +136,23 @@ public class Main extends Application {
 		//set default value
 		resourceList.setValue("Select Resource Type");
 		
-		inputfilename.setOnMouseClicked(e -> {
+/*		inputfilename.setOnMouseClicked(e -> {
 			FileChooser fc = new FileChooser();
+			
     	    fc.setTitle("Select XML file");
     	    fc.getExtensionFilters().addAll(
     	    new ExtensionFilter("Text Files", "*.xml"),
     	    new ExtensionFilter("Text Files", "*.json"),
     	    new ExtensionFilter("All Files", "*.*"));
-    	   	File phil = fc.showOpenDialog(primaryStage);
-    	   	inputfilename.setText(phil.toString());
+    	   	
+    	    File phil = fc.showOpenDialog(primaryStage);
+    	
+    	    inputfilename.setText(phil.toString());
 			}
-		);
+		);*/
 
 		
-		outputfilename.setOnMouseClicked(e -> {
+/*		outputfilename.setOnMouseClicked(e -> {
 			DirectoryChooser directoryChooser = new DirectoryChooser(); 
             directoryChooser.setTitle("Select output folder");
 
@@ -133,7 +161,64 @@ public class Main extends Application {
                if(file!=null){
             	   outputfilename.setText(file.getPath());
             }
-		});
+		});*/
+		
+		btnSelectInputFile.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                FileChooser fileChooser = new FileChooser();
+                
+                //Open directory from existing directory
+                if(file != null){
+                    File existDirectory = file.getParentFile();
+                    fileChooser.setInitialDirectory(existDirectory);
+                }
+
+                //Set extension filter
+                
+                //FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("*.xml", "*.json");
+                fileChooser.getExtensionFilters().addAll(
+                		new ExtensionFilter("All Files", "*.*"),
+                		new ExtensionFilter("XML Files", "*.xml"),
+                		new ExtensionFilter("JSON Files", "*.json"));
+                 
+                //Show open file dialog
+                file = fileChooser.showOpenDialog(null);
+                if (file == null) {
+                    inputfilename.setText("");
+                }
+                else {
+                	
+                    inputfilename.setText(file.getPath());
+
+                }
+                //inputfilename.setText(file.getPath());
+            }
+        });
+		
+		
+		btnOutFolder.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+            	DirectoryChooser directoryChooser = new DirectoryChooser(); 
+                directoryChooser.setTitle("Select output folder");
+                
+                //Open directory from existing directory
+                if(file != null){
+                    File existDirectory = file.getParentFile();
+                    directoryChooser.setInitialDirectory(existDirectory);
+                }
+
+                //Show open file dialog
+                file = directoryChooser.showDialog(null);
+                
+	                if(file!=null){
+	             	   outputfilename.setText(file.getPath());
+	                }
+                }
+        });
 		
 		
 		btnParse.setOnAction(
@@ -141,9 +226,8 @@ public class Main extends Application {
 	            	
 					@Override
 					public void handle(ActionEvent event) {
-						System.out.println("type= "+conversionType.getValue());
-						if (inputfilename.getText().isEmpty() || resourceList.getValue()=="Select Resource Type"
-								|| outputfilename.getText().isEmpty() || (conversionType.getValue()==null)){
+
+						if (inputfilename.getText().isEmpty() || outputfilename.getText().isEmpty() || (conversionType.getValue()==null)){
 							Alert alert = new Alert(AlertType.WARNING);
 							alert.setTitle("IOException");
 							alert.setHeaderText("Error");
@@ -164,37 +248,42 @@ public class Main extends Application {
 						}
 						
 						
-						String[] ar = new String[3];
+						String[] ar = new String[2];
 						
-//						System.out.println("resourceList.getValue()= "+resourceList.getValue());
-//						System.out.println("xmlfilename.getText()= "+xmlfilename.getText());
-//						System.out.println("outputfilename.getText()= "+outputfilename.getText());
-//						
-						ar[0] = resourceList.getValue();
-						ar[1]= inputfilename.getText();
-						ar[2] = outputfilename.getText();
+						//ar[0] = resourceList.getValue();
+						ar[0]= inputfilename.getText();
+						ar[1] = outputfilename.getText();
 						
 						
 	            	    try {
 	            	    	
+	            	    	if (lblDone.isVisible()) {
+								lblDone.setVisible(false);
+								lblProcessing.setVisible(true);
+	            	    	}
+							
 	            	    	if (conversionType.getValue().equals("XML > JSON")){
-	    						System.out.println("type= "+conversionType.getValue());
 
 	            	    		ParseToJSON.main(ar);
 	            	    	}
 	            	    	else if (conversionType.getValue().equals("JSON > XML")) {
-	    						System.out.println("type= "+conversionType.getValue());
 
 	            	    		ParseToXML.main(ar);
 	            	    	}
-							lblDone.setVisible(true);
+	            	    	
+	            	    	//label visibility
+	            	    	if (!lblDone.isVisible()) {
+	            	    		lblDone.setVisible(true);
+								lblProcessing.setVisible(false);
+								btnParse.setText("web");
+	            	    	}
+							
+
 						} catch (IOException e) {
 						
 							
 							e.printStackTrace();
 						}
-	            	    
-	            	    
 	            	    
 					}
 				
@@ -212,27 +301,28 @@ public class Main extends Application {
         
 		GridPane.setConstraints(label1, 0, 3);
         GridPane.setConstraints(inputfilename, 1, 3);
-        
-        GridPane.setConstraints(label2, 0, 5);
-        GridPane.setConstraints(resourceList, 1, 5);
-        
-        GridPane.setConstraints(label3, 0, 6);
-        GridPane.setConstraints(outputfilename, 1,6);
-        
+        GridPane.setConstraints(btnSelectInputFile, 2, 3);
+
+        GridPane.setConstraints(label3, 0, 4);
+        GridPane.setConstraints(outputfilename, 1,4);
+        GridPane.setConstraints(btnOutFolder, 2, 4);
+
         GridPane.setConstraints(label4, 0, 7);
         GridPane.setConstraints(btnParse, 1, 7);
         
+        GridPane.setConstraints(lblProcessing, 0, 8);
+
         GridPane.setConstraints(lblDone, 1, 8);
         
         inputGridPane.setHgap(10);
         inputGridPane.setVgap(10);
-        inputGridPane.getChildren().addAll(lblDone,inputfilename, btnParse, label1, label2, label3, 
-        		label4, resourceList, outputfilename, lblHeader, conversionType,lblconv);
+        inputGridPane.getChildren().addAll(lblDone,lblProcessing,inputfilename, btnParse, label1, label3, 
+        		label4, outputfilename, lblHeader, conversionType,lblconv,btnSelectInputFile,btnOutFolder);
  
         final Pane rootGroup = new VBox(12);
         rootGroup.getChildren().addAll(root,inputGridPane);
         rootGroup.setPadding(new Insets(0, 12, 12, 12));
- 
+        primaryStage.setResizable(false);
         primaryStage.setScene(new Scene(rootGroup));
 //        primaryStage.setScene(scene);
         primaryStage.show();

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.commons.io.FilenameUtils;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import ca.uhn.fhir.context.FhirContext;
@@ -16,17 +17,19 @@ import ca.uhn.fhir.parser.IParser;
 
 public class ParseToXML {
 
-	@SuppressWarnings({ "resource", "rawtypes" })
+	@SuppressWarnings({ "resource" })
 	public static void main(String[] args) throws IOException {
-		String resourcetype = args[0];// type of resource
-		String inputfile = args[1];// input filename
-		String outputfile = args[2];// output path
-
+		String inputfile = args[0];// input filename
+		String outputfile = args[1];// output path
+		
 		BufferedReader br;
 		String line;
 		StringBuilder sb;
 		br = new BufferedReader(new FileReader(new File(inputfile)));
 		
+		File f = new File(inputfile);
+		String inputFilename = f.getName();
+		String fileNameWithOutExt = FilenameUtils.removeExtension(inputFilename);
 		
 		sb = new StringBuilder();
 
@@ -37,11 +40,8 @@ public class ParseToXML {
 
 		FhirContext ctx = FhirContext.forDstu3();
 		IParser parser = ctx.newJsonParser();
-		// send the resource argument to getResource method
-		Class rr = getResource(resourcetype);
-		@SuppressWarnings("unchecked")
-		Object resource = parser.parseResource(rr, result);
-
+		// resource = parser.parseResource(rr, result);
+		Object resource = parser.parseResource(result);
 		String outputJSON = ctx.newXmlParser().setPrettyPrint(true).encodeResourceToString((IBaseResource) resource);
 
 		try {
@@ -49,8 +49,9 @@ public class ParseToXML {
 			BufferedWriter bw = null;
 			FileWriter fw = null;
 
-			String fileName = new SimpleDateFormat("yyyyMMddHHmm'.xml'").format(new Date());
-			
+			//String fileName = new SimpleDateFormat("yyyyMMddHHmm'.xml'").format(new Date());
+			String fileName = fileNameWithOutExt+".xml";
+
 			fw = new FileWriter(outputfile+"/"+fileName);
 			bw = new BufferedWriter(fw);
 			bw.write(outputJSON);
