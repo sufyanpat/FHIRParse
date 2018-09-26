@@ -13,8 +13,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import org.apache.commons.io.FilenameUtils;
 
-public class ParseToJSON {
-
+public class ParseToJSON extends Thread{
 	@SuppressWarnings({ "resource" })
 	public static void main(String[] args) throws IOException {
 		String inputfile = args[0];// input filename
@@ -64,7 +63,7 @@ public class ParseToJSON {
 			ioe.printStackTrace();
 		}
 	}
-
+ 
 	@SuppressWarnings("rawtypes")
 	public static Class getResource(String resource) {
 

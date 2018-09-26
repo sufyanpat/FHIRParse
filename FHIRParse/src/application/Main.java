@@ -33,13 +33,12 @@ public class Main extends Application {
 
 	Button btnParse, btnSelectInputFile, btnOutFolder;
 	File file;
-	
+
 	public static void main(String[] args) {
 		launch(args);
 
 	}
 
-	@SuppressWarnings("unused")
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		primaryStage.setTitle("FHIR Parser");
@@ -105,10 +104,8 @@ public class Main extends Application {
 		Label label4 = new Label("Click 'Parse!'");
 		
 		Label lblDone = new Label("Done!");
-		Label lblProcessing = new Label("Processing...");
 
 		lblDone.setVisible(false);
-		lblProcessing.setVisible(false);
 		
 		ChoiceBox<String> conversionType = new ChoiceBox<>();
 		conversionType.getItems().addAll("XML > JSON", "JSON > XML");
@@ -168,7 +165,8 @@ public class Main extends Application {
             @Override
             public void handle(ActionEvent event) {
                 FileChooser fileChooser = new FileChooser();
-                
+                System.out.println("input file= "+file);
+
                 //Open directory from existing directory
                 if(file != null){
                     File existDirectory = file.getParentFile();
@@ -185,15 +183,9 @@ public class Main extends Application {
                  
                 //Show open file dialog
                 file = fileChooser.showOpenDialog(null);
-                if (file == null) {
-                    inputfilename.setText("");
-                }
-                else {
-                	
+                if (file != null) {
                     inputfilename.setText(file.getPath());
-
                 }
-                //inputfilename.setText(file.getPath());
             }
         });
 		
@@ -206,6 +198,7 @@ public class Main extends Application {
                 directoryChooser.setTitle("Select output folder");
                 
                 //Open directory from existing directory
+                System.out.println("Output folder= "+file);
                 if(file != null){
                     File existDirectory = file.getParentFile();
                     directoryChooser.setInitialDirectory(existDirectory);
@@ -226,7 +219,7 @@ public class Main extends Application {
 	            	
 					@Override
 					public void handle(ActionEvent event) {
-
+						
 						if (inputfilename.getText().isEmpty() || outputfilename.getText().isEmpty() || (conversionType.getValue()==null)){
 							Alert alert = new Alert(AlertType.WARNING);
 							alert.setTitle("IOException");
@@ -256,12 +249,6 @@ public class Main extends Application {
 						
 						
 	            	    try {
-	            	    	
-	            	    	if (lblDone.isVisible()) {
-								lblDone.setVisible(false);
-								lblProcessing.setVisible(true);
-	            	    	}
-							
 	            	    	if (conversionType.getValue().equals("XML > JSON")){
 
 	            	    		ParseToJSON.main(ar);
@@ -271,16 +258,13 @@ public class Main extends Application {
 	            	    		ParseToXML.main(ar);
 	            	    	}
 	            	    	
-	            	    	//label visibility
-	            	    	if (!lblDone.isVisible()) {
-	            	    		lblDone.setVisible(true);
-								lblProcessing.setVisible(false);
-								btnParse.setText("web");
-	            	    	}
-							
+	            	    	//pop up box after completion
+							Alert alert = new Alert(AlertType.INFORMATION);
+							alert.setHeaderText("Done");
+							alert.setTitle("Complete");
+	            	    	alert.showAndWait();
 
 						} catch (IOException e) {
-						
 							
 							e.printStackTrace();
 						}
@@ -310,15 +294,15 @@ public class Main extends Application {
         GridPane.setConstraints(label4, 0, 7);
         GridPane.setConstraints(btnParse, 1, 7);
         
-        GridPane.setConstraints(lblProcessing, 0, 8);
 
         GridPane.setConstraints(lblDone, 1, 8);
         
         inputGridPane.setHgap(10);
         inputGridPane.setVgap(10);
-        inputGridPane.getChildren().addAll(lblDone,lblProcessing,inputfilename, btnParse, label1, label3, 
-        		label4, outputfilename, lblHeader, conversionType,lblconv,btnSelectInputFile,btnOutFolder);
- 
+        
+        inputGridPane.getChildren().addAll(lblDone,inputfilename, btnParse, label1, label3, 
+            		label4, outputfilename, lblHeader, conversionType,lblconv,btnSelectInputFile,btnOutFolder);
+        
         final Pane rootGroup = new VBox(12);
         rootGroup.getChildren().addAll(root,inputGridPane);
         rootGroup.setPadding(new Insets(0, 12, 12, 12));
@@ -327,7 +311,4 @@ public class Main extends Application {
 //        primaryStage.setScene(scene);
         primaryStage.show();
 	}
-
-
-
 }
