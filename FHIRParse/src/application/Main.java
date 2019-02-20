@@ -75,7 +75,7 @@ public class Main extends Application {
 	        	Alert alert = new Alert(AlertType.INFORMATION);
 	        	alert.setTitle("Version");
 	        	alert.setHeaderText(null);
-	        	alert.setContentText("FHIRParse v2.0");
+	        	alert.setContentText("FHIRParse v2.1");
 
 	        	alert.showAndWait();
 	        }
