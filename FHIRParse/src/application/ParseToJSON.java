@@ -7,11 +7,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.apache.commons.io.FilenameUtils;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import org.apache.commons.io.FilenameUtils;
 
 public class ParseToJSON extends Thread{
 	@SuppressWarnings({ "resource" })
@@ -41,10 +41,13 @@ public class ParseToJSON extends Thread{
 		IParser parser = ctx.newXmlParser();
 		// send the resource argument to getResource method
 		//Object resource = parser.parseResource(rr, result);
-		Object resource = parser.parseResource(result);
-
+		IBaseResource resource = parser.parseResource(result);
+		
 		String outputJSON = ctx.newJsonParser().setPrettyPrint(true).encodeResourceToString((IBaseResource) resource);
 
+		//String outputJSON2 = ctx.newJsonParser().setPrettyPrint(true).encodeResourceToString(resource);
+
+		//System.out.println("json= "+outputJSON2);
 		try {
 			// output the string into the output location
 			BufferedWriter bw = null;
